@@ -1,0 +1,3 @@
+[submodule "lidar_potential_field_oa/tracking_nn/nn_models_lib"]
+	path = lidar_potential_field_oa/tracking_nn/nn_models_lib
+	url = https://github.com/harryzhang1018/nn_models_lib.git
