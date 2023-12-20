@@ -81,8 +81,8 @@ class ControlNode(Node):
         self.go = False
         self.vehicle_cmd = VehicleInput()
         self.lidar_data = LaserScan()
-        self.tracking_model = load_model('/home/art/art/workspace/src/lidar_potential_field_oa/lidar_potential_field_oa/tracking_nn/nn_models_lib/single_speed_MPC_IL_NN.keras')
-        self.file = open("/home/art/art/workspace/src/lidar_potential_field_oa/lidar_potential_field_oa/paths/path1.csv")
+        self.tracking_model = load_model('/sbel/Desktop/ros_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/tracking_nn/nn_models_lib/single_speed_MPC_IL_NN.keras')
+        self.file = open("/sbel/Desktop/ros_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/paths/sin_path.csv")
         self.get_logger().info("opened file: %s" % self.file)
         self.ref_traj = np.loadtxt(self.file,delimiter=",")
         self.lookahead = 1.0
@@ -101,7 +101,7 @@ class ControlNode(Node):
     # function to process data this class subscribes to
     def state_callback(self, msg):
         # self.get_logger().info("Received '%s'" % msg)
-        self.go = True
+        
         self.state = msg
         self.x = msg.pose.position.x
         self.y = msg.pose.position.y
@@ -115,7 +115,7 @@ class ControlNode(Node):
         #self.get_logger().info("(x, y, theta, v): (%s,%s,%s,%s)" % (self.x, self.y ,self.theta,self.v))
         
     def lidar_callback(self,msg):
-        
+        self.go = True
         #self.get_logger().info("received lidar data")
         self.lidar_data = msg
         self.raw_lidar_data = msg.ranges
@@ -129,7 +129,7 @@ class ControlNode(Node):
     
     def distance_based_intensity(self):
         intensity = [0.0]*len(self.reduced_lidar_data)
-        dis_threshold = 4.0
+        dis_threshold = 9.0
         for i in range(len(self.reduced_lidar_data)):
             if self.reduced_lidar_data[i] < dis_threshold:
                 intensity[i] = 1.0 / abs(self.reduced_lidar_data[i])
@@ -138,7 +138,7 @@ class ControlNode(Node):
         return intensity
     
     def values_function(self):
-        alpha = 0.4
+        alpha = 3.1
         length = len(self.reduced_lidar_data)
         values = [0.0]*length
         pi_array = np.linspace(0,np.pi,length)
@@ -224,7 +224,8 @@ class ControlNode(Node):
         e = self.error_state()
         error_state = np.array(e)
         ctrl_input = self.tracking_model.predict(np.array([error_state]))
-        self.throttle = ctrl_input[0][0]
+        #self.throttle = ctrl_input[0][0]
+        self.throttle = 0.9
         steering_flw = ctrl_input[0][1]
         # do a steering correction based on lidar data
         self.intensity = self.distance_based_intensity()
@@ -242,13 +243,8 @@ class ControlNode(Node):
             self.get_logger().info("Tracking reference trajectory")
             steering = steering_flw
         ## smooth steering
-        delta_steering = steering - self.steering
-        if abs(delta_steering) > 0.1:
-            self.steering = self.steering + 0.1 * delta_steering / abs(
-                delta_steering
-            )
-        else:
-            self.steering = steering
+
+        self.steering = steering
         ### for vehicle one
         msg = VehicleInput()
         msg.steering = np.clip(self.steering, -1.0, 1.0)
