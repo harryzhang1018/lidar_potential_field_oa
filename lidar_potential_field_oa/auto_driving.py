@@ -81,8 +81,8 @@ class ControlNode(Node):
         self.go = False
         self.vehicle_cmd = VehicleInput()
         self.lidar_data = LaserScan()
-        self.tracking_model = load_model('/sbel/Desktop/ros_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/tracking_nn/nn_models_lib/single_speed_MPC_IL_NN.keras')
-        self.file = open("/sbel/Desktop/ros_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/paths/sin_path.csv")
+        self.tracking_model = load_model('/sbel/Desktop/ros2_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/tracking_nn/nn_models_lib/single_speed_MPC_IL_NN.keras')
+        self.file = open("/sbel/Desktop/ros2_ws/src/lidar_potential_field_oa/lidar_potential_field_oa/paths/sin_path.csv")
         self.get_logger().info("opened file: %s" % self.file)
         self.ref_traj = np.loadtxt(self.file,delimiter=",")
         self.lookahead = 1.0
